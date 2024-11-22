@@ -1,15 +1,13 @@
-"use client";
-
+import PlaybookToolbar from "@/component/PlaybookToolbar/PlaybookToolbar";
+import { Box, Grid2 as Grid } from "@mui/material";
 import { ReactNode } from "react";
-// import { useParams } from "next/navigation";
 
 const PlayLayout = ({ children }: { children: ReactNode }) => {
-  // const params = useParams();
-
   return (
-    <section id="container">
-      <main>{children}</main>
-    </section>
+    <Grid container sx={{ height: "100%", width: "100%" }} id="container">
+      <Box>{children}</Box>
+      <PlaybookToolbar />
+    </Grid>
   );
 };
 

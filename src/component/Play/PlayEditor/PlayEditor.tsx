@@ -4,7 +4,7 @@ import {
   POSITION_RADIUS,
   WIDTH,
 } from "@/constants/size";
-import { Arrow, Circle, Layer, Line, Stage, Star } from "react-konva";
+import { Arrow, Circle, Layer, Line, Rect, Stage, Star } from "react-konva";
 import { KonvaEventObject, Node, NodeConfig } from "konva/lib/Node";
 import { StarConfig } from "konva/lib/shapes/Star";
 import { Fragment, RefObject } from "react";
@@ -47,6 +47,7 @@ const PlayEditor = ({
         display: "flex",
         height: "100%",
         alignItems: "center",
+        justifyContent: "center",
       }}
     >
       <Stage
@@ -84,15 +85,17 @@ const PlayEditor = ({
               option = [],
               motion = 0,
             } = routes[positionIdx] ?? {};
+            const key = `position-${position.id}`;
             const tension = position.isRoundedRoute ? 0.5 : 0;
             const color = colors[positionIdx];
+            const isCenter = positionIdx === 0;
             const attrs: NodeConfig & StarConfig = {
               id: position.id,
               x: position.x,
               y: position.y,
-              dragBoundFunc: dragBound,
               fill: color,
               draggable: !!(handleDragStart && handleDragEnd),
+              dragBoundFunc: dragBound,
               onDragStart: handleDragStart,
               onDragEnd: handleDragEnd,
               onClick: handleClick,
@@ -105,6 +108,9 @@ const PlayEditor = ({
               onTouchStart: onDraw,
               onTouchEnd: onDraw,
               rotation: 180,
+              shadowColor: color,
+              width: POSITION_RADIUS * 2,
+              height: POSITION_RADIUS * 2,
               radius: position.isSelected
                 ? POSITION_RADIUS * 1.1
                 : POSITION_RADIUS,
@@ -117,10 +123,18 @@ const PlayEditor = ({
             return (
               <Fragment key={position.id}>
                 {position.isKey ? (
-                  <Star key={`position-${position.id}`} {...attrs} />
+                  <Star key={key} {...attrs} />
+                ) : isCenter ? (
+                  <Rect
+                    key={key}
+                    {...attrs}
+                    offsetX={POSITION_RADIUS}
+                    offsetY={POSITION_RADIUS}
+                  />
                 ) : (
-                  <Circle key={`position-${position.id}`} {...attrs} />
+                  <Circle key={key} {...attrs} />
                 )}
+
                 <Arrow
                   key={`route-${position.id}`}
                   id={`route-${position.id}`}

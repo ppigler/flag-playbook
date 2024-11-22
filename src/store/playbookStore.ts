@@ -35,9 +35,10 @@ type PlaybookStore = PlaybookState & {
   handleDragEnd: (e: KonvaEventObject<DragEvent, Node<NodeConfig>>) => void;
   handleClick: (e: KonvaEventObject<MouseEvent, Node<NodeConfig>>) => void;
   handleRouteDraw: (e: KonvaEventObject<MouseEvent, Node<NodeConfig>>) => void;
-  toggleRounded: () => void;
-  handleRemoveRoute: () => void;
-  handleToggleIsKey: () => void;
+  handleChangeLabel: (value: string) => void;
+  toggleRounded: (value?: boolean) => void;
+  handleRemoveRoute: (isOption?: boolean) => void;
+  handleToggleIsKey: (value?: boolean) => void;
   handleToggleEditOption: () => void;
   handleSetMotion: (motion?: number) => void;
   handleSetScale: (scale: number) => void;
@@ -71,7 +72,6 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
       initializeState: (props: Partial<InitPlaybookProps> = {}) =>
         set(
           () => ({
-            ...INITIAL_PLAYBOOK_STATE,
             ...props,
           }),
           undefined,
@@ -89,17 +89,32 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
       handleOnDraw: (
         e?: KonvaEventObject<MouseEvent | TouchEvent, Node<NodeConfig>>
       ) => {
+        const validNodes = ["Circle", "Star", "Rect"];
+
+        const isPointedAtNode = !!e?.target.className;
+        const nodes = e?.target.parent?.children;
+        const [node] = e?.target.parent?.find(`#${e.target.id()}`) ?? [];
+
+        if (nodes?.length ?? 0 > 0) {
+          nodes?.forEach((node) => {
+            if (node.id() === get().selectedPosition?.id) return;
+            node.setAttr("shadowBlur", 0);
+          });
+        }
+
+        // @ts-expect-error this is main layer
+        e?.target.children?.[2].children.forEach((node) => {
+          if (node.id() === get().selectedPosition?.id) return;
+          node.setAttr("shadowBlur", 0);
+        });
+
+        if (validNodes.includes(e?.target.className ?? "")) {
+          node.setAttr("shadowBlur", 5);
+        }
+
         if (!get().selectedPosition) return;
 
-        const startEventTypes = ["mousedown", "touchstart"];
-        const moveEventTypes = ["mousemove", "touchmove", "mouseenter"];
-
-        const validShapes = ["Circle", "Star"];
-        const isPositionDragged = validShapes.includes(
-          e?.target.className || ""
-        );
-
-        const pos = isPositionDragged
+        const pos = isPointedAtNode
           ? e?.target.parent?.getRelativePointerPosition()
           : e?.target.getRelativePointerPosition();
 
@@ -115,14 +130,14 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
           ? Math.round(pos.y / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE
           : 0;
 
-        if (e && startEventTypes.includes(e.type) && x && y) {
+        if (!drawLineHorizontal?.length && !drawLineHorizontal?.length) {
           get().drawLayerRef?.current?.add(
             new Konva.Line({
               id: "draw-line-vertical",
               points: [x, 0, x, HEIGHT],
               stroke: "rgba(0,0,0,0.2)",
               strokeWidth: 1,
-              dash: [20, 20],
+              dash: [BLOCK_SNAP_SIZE / 5, BLOCK_SNAP_SIZE / 5],
             })
           );
           get().drawLayerRef?.current?.add(
@@ -131,20 +146,13 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
               points: [0, y, WIDTH, y],
               stroke: "rgba(0,0,0,0.2)",
               strokeWidth: 1,
-              dash: [20, 20],
+              dash: [BLOCK_SNAP_SIZE / 5, BLOCK_SNAP_SIZE / 5],
             })
           );
           return;
         }
 
-        if (
-          e &&
-          moveEventTypes.includes(e.type) &&
-          drawLineHorizontal &&
-          drawLineVertical &&
-          x &&
-          y
-        ) {
+        if (e && drawLineHorizontal && drawLineVertical && x && y) {
           drawLineHorizontal.forEach((line, idx) =>
             idx === 0 ? line.points([x, 0, x, HEIGHT]) : line.destroy()
           );
@@ -252,11 +260,8 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
           (state) => {
             const pos = e.target.getRelativePointerPosition();
             const selectedPositionIndex = state.selectedPosition?.index ?? -1;
-            const isInvalidRoute =
-              pos === null ||
-              Math.abs(pos.x) <= POSITION_RADIUS ||
-              Math.abs(pos.y) <= POSITION_RADIUS;
-            if (selectedPositionIndex === -1 || isInvalidRoute) return {};
+            const selectedPositionId = state.selectedPosition?.id;
+            if (e.target.id() === selectedPositionId || !pos) return {};
 
             const x = Math.round(pos.x / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE;
             const y = Math.round(pos.y / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE;
@@ -288,7 +293,24 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
           { type: "playbookStore/handleRouteDraw", e }
         ),
 
-      handleRemoveRoute: () =>
+      handleChangeLabel: (label: string) =>
+        set(
+          (state) => {
+            const selectedPositionIndex = state.selectedPosition?.index ?? -1;
+            if (selectedPositionIndex === -1) return {};
+            return {
+              positions: [
+                ...state.positions.slice(0, selectedPositionIndex),
+                { ...state.positions[selectedPositionIndex], label },
+                ...state.positions.slice(selectedPositionIndex + 1),
+              ],
+            };
+          },
+          undefined,
+          { type: "playbookStore/handleChangeLabel", label }
+        ),
+
+      handleRemoveRoute: (deleteFromOption?: boolean) =>
         set(
           (state) => {
             const selectedPositionIndex = state.selectedPosition?.index;
@@ -297,17 +319,18 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
               state.routes[selectedPositionIndex];
             const lastRoute = route.at(-1) ?? { x: 0, y: 0 };
             const firstOption = option.at(0) ?? { x: 0, y: 0 };
+            const isOption = deleteFromOption ?? state.isOption;
 
             const newRouteSegment = {
-              route: state.isOption ? route : route.slice(0, route.length - 1),
-              option: state.isOption
+              route: isOption ? route : route.slice(0, route.length - 1),
+              option: isOption
                 ? option.length === 2
                   ? []
                   : option.slice(0, option.length - 1)
                 : _.isEqual(lastRoute, firstOption)
                 ? []
                 : option,
-              motion: Math.min(route.length - 1, motion),
+              motion: Math.min(Math.max(route.length - 1, 0), motion),
             };
             return {
               routes: [
@@ -321,28 +344,30 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
           { type: "playbookStore/handleRemoveRoute" }
         ),
 
-      toggleRounded: () =>
+      toggleRounded: (value?: boolean) =>
         set(
           (state) => ({
             positions: state.positions.map((position) => ({
               ...position,
-              isRoundedRoute: position.isSelected && !position.isRoundedRoute,
+              ...(position.isSelected
+                ? { isRoundedRoute: value ?? !position.isRoundedRoute }
+                : {}),
             })),
           }),
           undefined,
-          "playbookStore/toggleRounded"
+          { type: "playbookStore/toggleRounded", value }
         ),
 
-      handleToggleIsKey: () =>
+      handleToggleIsKey: (value?: boolean) =>
         set(
           (state) => ({
             positions: state.positions.map((position) => ({
               ...position,
-              isKey: position.isSelected ? !position.isKey : false,
+              isKey: position.isSelected ? value ?? !position.isKey : false,
             })),
           }),
           undefined,
-          "playbookStore/handleToggleIsKey"
+          { type: "playbookStore/handleToggleIsKey", value }
         ),
 
       handleToggleEditOption: () =>
@@ -382,7 +407,10 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
         ),
 
       dragBound: ({ x, y }: Vector2d) => ({
-        x,
+        x: Math.min(
+          Math.max(POSITION_RADIUS * get().scale, x),
+          (WIDTH - POSITION_RADIUS) * get().scale
+        ),
         y: Math.max(y, (HEIGHT / 2) * get().scale),
       }),
     }),

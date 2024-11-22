@@ -21,9 +21,7 @@ const SelectFormationDialog = ({
       aria-labelledby="select-formation-dialog-title"
       aria-describedby="select-formation-dialog-desc"
     >
-      <DialogTitle id="select-formation-dialog-title">
-        Select Formation
-      </DialogTitle>
+      <DialogTitle id="select-formation-dialog-title">Create play</DialogTitle>
       <SelectFormationDialogContent
         formations={formations}
         handleClose={handleClose}

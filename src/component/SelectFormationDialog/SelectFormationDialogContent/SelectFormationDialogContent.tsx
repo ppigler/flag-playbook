@@ -41,11 +41,12 @@ const SelectFormationDialogContent = ({
     <>
       <DialogContent dividers>
         <DialogContentText id="select-formation-dialog-desc">
-          desc
+          Select a formation from your base formations to start with. You can
+          later move the players around when you are editing the play.
         </DialogContentText>
-        <Grid container spacing={4}>
+        <Grid container spacing={3} sx={{ marginTop: 4 }}>
           {Object.entries(formations).map(([id, { name, image }]) => (
-            <Grid key={id} size={{ md: 6, xs: 12 }}>
+            <Grid key={id} size={{ lg: 4, sm: 6, xs: 12 }}>
               <Card>
                 <CardContent>
                   <Grid container direction="column">
@@ -66,7 +67,7 @@ const SelectFormationDialogContent = ({
                         />
                       </FormControl>
                     </Grid>
-                    <Grid sx={{ width: 150, height: 120 }}>
+                    <Grid sx={{ width: 150, height: 120 }} alignSelf="center">
                       <Image src={image!} alt={name} height={120} width={150} />
                     </Grid>
                   </Grid>

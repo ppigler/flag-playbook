@@ -24,6 +24,7 @@ type SettingsState = {
   setFormations: (
     formations: Record<string, { positions: Position[]; name: string }>
   ) => void;
+  setFormationLabels: (id: string, labels: string[]) => void;
 };
 
 const useSettingsStoreBase = create<SettingsState>()(
@@ -72,6 +73,18 @@ const useSettingsStoreBase = create<SettingsState>()(
             undefined,
             { type: "settingsStore/setFormations", formations }
           ),
+        setFormationLabels: (id, labels) =>
+          set((state) => ({
+            formations: {
+              ...state.formations,
+              [id]: {
+                ...state.formations[id],
+                positions: state.formations[id].positions.map(
+                  (position, index) => ({ ...position, label: labels[index] })
+                ),
+              },
+            },
+          })),
       }),
       {
         name: "settingsStore",

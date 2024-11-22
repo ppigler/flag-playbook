@@ -1,6 +1,6 @@
-import type { Metadata } from "next";
 import { Container } from "@mui/material";
-import AppBar from "@/component/AppBar/AppBar";
+import { Metadata } from "next";
+import Navigation from "@/component/Navigation/Navigation";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -15,8 +15,14 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <AppBar />
-        <Container maxWidth="lg">{children}</Container>
+        <Container
+          maxWidth="lg"
+          id="body-container"
+          sx={{ paddingBlockEnd: 12, overflowX: "hidden", height: "100vh" }}
+        >
+          {children}
+        </Container>
+        <Navigation />
       </body>
     </html>
   );
