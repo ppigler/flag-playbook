@@ -43,7 +43,8 @@ const Formations = () => {
     }));
 
   const fitStageIntoParentContainer = useCallback(() => {
-    const newWidth = document.getElementById("container")?.offsetWidth ?? WIDTH;
+    const newWidth =
+      (document.getElementById("container")?.offsetWidth ?? WIDTH) - 100;
     const scale = newWidth / WIDTH;
     setScale(scale);
 
@@ -61,12 +62,7 @@ const Formations = () => {
   }, [setRefs, newFormations]);
 
   useEffect(() => {
-    if (
-      Object.keys(newFormations).length > 0 &&
-      refs.every((ref) => !!ref.current)
-    ) {
-      fitStageIntoParentContainer();
-    }
+    fitStageIntoParentContainer();
   }, [fitStageIntoParentContainer, newFormations, refs]);
 
   window.addEventListener("resize", fitStageIntoParentContainer);
@@ -91,8 +87,8 @@ const Formations = () => {
   }, [colors]);
 
   const dragBound = ({ x, y }: Vector2d) => ({
-    x,
-    y: Math.max(y, (HEIGHT / 2) * scale),
+    x: Math.max(0, Math.min(x, WIDTH * scale)),
+    y: Math.max(Math.min(y, HEIGHT * scale), (HEIGHT / 2) * scale),
   });
 
   const handleAddFormation = () =>
@@ -130,7 +126,11 @@ const Formations = () => {
   };
 
   return (
-    <Grid container direction="column" sx={{ alignItems: "flex-start" }}>
+    <Grid
+      container
+      direction="column"
+      sx={{ alignItems: "flex-start", width: "100%" }}
+    >
       <Grid container spacing={2} sx={{ width: "100%" }}>
         {Object.entries(newFormations).map(([id, { name, positions }], idx) => {
           const handleDragStart = (
@@ -191,15 +191,6 @@ const Formations = () => {
             <Grid key={id} size={{ xs: 12, md: 6 }}>
               <Card>
                 <CardContent>
-                  <div id="container">
-                    <PlayEditor
-                      positions={positions}
-                      stageRef={refs[idx]}
-                      dragBound={dragBound}
-                      handleDragStart={handleDragStart}
-                      handleDragEnd={handleDragEnd}
-                    />
-                  </div>
                   <TextField
                     fullWidth
                     label="Formation name"
@@ -210,6 +201,15 @@ const Formations = () => {
                       handleChangeFormationName(event.target.value, id)
                     }
                   />
+                  <div style={{ width: "100%" }} id="container">
+                    <PlayEditor
+                      positions={positions}
+                      stageRef={refs[idx]}
+                      dragBound={dragBound}
+                      handleDragStart={handleDragStart}
+                      handleDragEnd={handleDragEnd}
+                    />
+                  </div>
                 </CardContent>
                 <CardActions>
                   <IconButton onClick={handleRemoveFormation}>

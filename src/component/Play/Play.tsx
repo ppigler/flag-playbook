@@ -103,15 +103,19 @@ const Play = ({ playId, formationId, isViewOnly }: PlayProps) => {
     props.positions = (
       props.positions ??
       formations[formation]?.positions ??
-      DEFAULT_PLAYER_POSITIONS.slice(0, numberOfPlayers)
-    ).map((position) => ({ ...position, isSelected: false })) as Position[];
+      DEFAULT_PLAYER_POSITIONS
+    )
+      .slice(0, numberOfPlayers)
+      .map((position) => ({ ...position, isSelected: false })) as Position[];
     props.routes =
       props.routes ??
-      (DEFAULT_PLAYER_POSITIONS.map(() => ({
-        route: [],
-        option: [],
-        motion: 0,
-      })) as Route[]);
+      (
+        DEFAULT_PLAYER_POSITIONS.map(() => ({
+          route: [],
+          option: [],
+          motion: 0,
+        })) as Route[]
+      ).slice(0, numberOfPlayers);
     setInitialPositions(props.positions);
     setInitialRoutes(props.routes);
     if (!!initializeState) {
@@ -143,7 +147,10 @@ const Play = ({ playId, formationId, isViewOnly }: PlayProps) => {
       dragBound={dragBound}
       drawLayerRef={drawLayerRef!}
       stageRef={stageRef}
-      positions={isViewOnly ? initialPositions : positions}
+      positions={((isViewOnly ? initialPositions : positions) ?? []).slice(
+        0,
+        numberOfPlayers
+      )}
       routes={isViewOnly ? initialRoutes : routes}
     />
   );
