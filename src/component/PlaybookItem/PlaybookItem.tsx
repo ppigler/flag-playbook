@@ -10,7 +10,6 @@ import {
   IconButton,
 } from "@mui/material";
 import Image from "next/image";
-import Play from "../Play/Play";
 import Link from "next/link";
 import { MdDragHandle } from "react-icons/md";
 import { TbTrash } from "react-icons/tb";
@@ -18,6 +17,7 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useMemo, useState } from "react";
 import DeletePlayDialog from "../DeletePlayDialog/DeletePlayDialog";
+import dynamic from "next/dynamic";
 
 type PlaybookItem = {
   playId: string;
@@ -26,6 +26,10 @@ type PlaybookItem = {
   image?: string;
   deletePlayHandler: () => void;
 };
+
+const Play = dynamic(() => import("@/component/Play/Play"), {
+  ssr: false,
+});
 
 const PlaybookItem = ({
   playId,

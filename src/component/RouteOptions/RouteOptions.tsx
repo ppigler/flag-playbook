@@ -13,7 +13,7 @@ import {
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { MdDragHandle } from "react-icons/md";
 import { TbBackspace } from "react-icons/tb";
 
@@ -63,12 +63,9 @@ const RouteOptions = ({ isOpen, onClose, onOpen }: RouteOptionsProps) => {
     }
   }, [currentRouteIdx, selectedPosition, positions, setLabel]);
 
-  const debouncedChangeHandler = useCallback(
-    debounce((newValue) => {
-      handleChangeLabel(newValue);
-    }, 500),
-    []
-  );
+  const debouncedChangeHandler = debounce((newValue) => {
+    handleChangeLabel(newValue);
+  }, 500);
 
   const [selectedRouteSegment, setSelectedRouteSegment] = useState<
     null | number
