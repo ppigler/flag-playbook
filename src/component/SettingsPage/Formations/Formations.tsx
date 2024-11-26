@@ -65,7 +65,11 @@ const Formations = () => {
     fitStageIntoParentContainer();
   }, [fitStageIntoParentContainer, newFormations, refs]);
 
-  window.addEventListener("resize", fitStageIntoParentContainer);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      window.addEventListener("resize", fitStageIntoParentContainer);
+    }
+  }, []);
 
   useEffect(() => {
     const formationWithImages = Object.entries(formations).reduce(

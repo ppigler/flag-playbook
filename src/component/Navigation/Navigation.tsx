@@ -15,11 +15,9 @@ import SelectFormationDialog from "../SelectFormationDialog/SelectFormationDialo
 import { useSettingsStore } from "@/store/settingsStore";
 import { usePathname } from "next/navigation";
 import { usePlaybookStore } from "@/store/playbookStore";
-import { usePDF } from "@react-pdf/renderer";
-import PdfDocument from "../PdfExport/PdfExport";
+import Link from "next/link";
 
 const Navigation = () => {
-  const [instance] = usePDF({ document: <PdfDocument /> });
   const pathname = usePathname();
 
   const plays = usePlayStore.use.plays();
@@ -82,6 +80,7 @@ const Navigation = () => {
               aria-label="back"
               icon={<TbArrowBack size={25} />}
               href="/"
+              LinkComponent={Link}
             />
           )}
           {isPlaysPage ? (
@@ -92,13 +91,14 @@ const Navigation = () => {
               onClick={handleFormationDialogOpen}
             />
           ) : null}
-          {isPlaysPage && !instance.loading && !instance.error ? (
+          {isPlaysPage ? (
             <BottomNavigationAction
               label="Export PDF"
               aria-label="Export PDF"
               icon={<TbPrinter size={25} />}
+              href="/export"
+              LinkComponent={Link}
               disabled={isExportPlaysDisabled}
-              href={instance.url ?? ""}
             />
           ) : null}
           {isPlayPage ? (
@@ -108,6 +108,7 @@ const Navigation = () => {
               disabled={!previousPlay}
               icon={<TbCaretLeft size={25} />}
               href={`/plays/${previousPlay}`}
+              LinkComponent={Link}
             />
           ) : null}
           {isPlayPage ? (
@@ -117,6 +118,7 @@ const Navigation = () => {
               disabled={!nextPlay}
               icon={<TbCaretRight size={25} />}
               href={`/plays/${nextPlay}`}
+              LinkComponent={Link}
             />
           ) : null}
           {isPlaysPage ? (
@@ -125,6 +127,7 @@ const Navigation = () => {
               aria-label="Settings"
               icon={<TbSettings size={25} />}
               href="/settings"
+              LinkComponent={Link}
               value="/settings"
             />
           ) : null}

@@ -22,7 +22,7 @@ const PlaybookToolbar = () => {
   const handleSetMotion = usePlaybookStore.use.handleSetMotion();
   const isOption = usePlaybookStore.use.isOption();
   const selectedPosition = usePlaybookStore.use.selectedPosition();
-  const routes = usePlaybookStore.use.routes() ?? [];
+  const routes = usePlaybookStore.use.routes();
 
   const [isAllOptionsOpened, setIsAllOptionsOpened] = useState(false);
 
@@ -40,7 +40,7 @@ const PlaybookToolbar = () => {
       routes[selectedPosition?.index ?? 0]?.motion === 0
         ? "Toggle motion"
         : "Remove motion",
-    [selectedPosition]
+    [selectedPosition, routes]
   );
   const toggleIsKeyLabel = useMemo(
     () => (selectedPosition?.isKey ? "Unmark route" : "Mark route"),
