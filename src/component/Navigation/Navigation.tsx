@@ -2,17 +2,14 @@
 
 import { usePlayStore } from "@/store/playStore";
 import { BottomNavigation, BottomNavigationAction, Paper } from "@mui/material";
-import { useCallback, useMemo, useState } from "react";
+import { useMemo } from "react";
 import {
   TbPrinter,
   TbSettings,
-  TbSquareRoundedPlus,
   TbArrowBack,
   TbCaretLeft,
   TbCaretRight,
 } from "react-icons/tb";
-import SelectFormationDialog from "../SelectFormationDialog/SelectFormationDialog";
-import { useSettingsStore } from "@/store/settingsStore";
 import { usePathname } from "next/navigation";
 import { usePlaybookStore } from "@/store/playbookStore";
 import Link from "next/link";
@@ -22,9 +19,6 @@ const Navigation = () => {
 
   const plays = usePlayStore.use.plays();
   const currentPlay = usePlaybookStore.use.playId();
-  const formations = useSettingsStore.use.formations();
-
-  const [isFormationDialogOpened, setIsFormationDialogOpened] = useState(false);
 
   const isPlaysPage = useMemo(() => pathname === "/", [pathname]);
   const isPlayPage = useMemo(() => pathname.includes("/plays"), [pathname]);
@@ -49,22 +43,8 @@ const Navigation = () => {
     [currentPlay, orderedPlays]
   );
 
-  const handleFormationDialogOpen = useCallback(
-    () => setIsFormationDialogOpened(true),
-    [setIsFormationDialogOpened]
-  );
-  const handleFormationDialogClose = useCallback(
-    () => setIsFormationDialogOpened(false),
-    [setIsFormationDialogOpened]
-  );
-
   return (
     <>
-      <SelectFormationDialog
-        formations={formations}
-        isOpened={isFormationDialogOpened}
-        handleClose={handleFormationDialogClose}
-      />
       <Paper
         sx={{
           position: "fixed",
@@ -83,14 +63,6 @@ const Navigation = () => {
               LinkComponent={Link}
             />
           )}
-          {isPlaysPage ? (
-            <BottomNavigationAction
-              label="Create new play"
-              aria-label="Create new play"
-              icon={<TbSquareRoundedPlus size={25} />}
-              onClick={handleFormationDialogOpen}
-            />
-          ) : null}
           {isPlaysPage ? (
             <BottomNavigationAction
               label="Export PDF"

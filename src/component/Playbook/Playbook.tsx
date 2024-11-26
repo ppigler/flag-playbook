@@ -11,18 +11,24 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { Grid2 as Grid } from "@mui/material";
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useShallow } from "zustand/shallow";
 import {
   SortableContext,
   sortableKeyboardCoordinates,
 } from "@dnd-kit/sortable";
 import PlaybookItem from "../PlaybookItem/PlaybookItem";
+import NewPlayCard from "../NewPlayCard/NewPlayCard";
+import SelectFormationDialog from "../SelectFormationDialog/SelectFormationDialog";
+import { useSettingsStore } from "@/store/settingsStore";
 
 const Playbook = () => {
-  const plays = usePlayStore(useShallow((state) => state.plays));
   const deletePlay = usePlayStore.use.deletePlay();
   const orderPlay = usePlayStore.use.orderPlay();
+  const plays = usePlayStore(useShallow((state) => state.plays));
+  const formations = useSettingsStore.use.formations();
+
+  const [isFormationDialogOpened, setIsFormationDialogOpened] = useState(false);
 
   const playIds = useMemo(
     () =>
@@ -49,36 +55,56 @@ const Playbook = () => {
     })
   );
 
+  const handleFormationDialogOpen = useCallback(
+    () => setIsFormationDialogOpened(true),
+    [setIsFormationDialogOpened]
+  );
+  const handleFormationDialogClose = useCallback(
+    () => setIsFormationDialogOpened(false),
+    [setIsFormationDialogOpened]
+  );
+
   return (
-    <DndContext
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
-    >
-      <Grid
-        container
-        spacing={{ xs: 2, md: 3 }}
-        sx={{ width: "100%", paddingBlock: 3 }}
+    <>
+      <SelectFormationDialog
+        formations={formations}
+        isOpened={isFormationDialogOpened}
+        handleClose={handleFormationDialogClose}
+      />
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
       >
-        <SortableContext items={playIds}>
-          {playIds.map((id, idx) => {
-            const playName = idx + 1;
-            const playUrl = `plays/${id}`;
-            const image = plays[id]?.image;
-            return (
-              <PlaybookItem
-                key={id}
-                playId={id}
-                playName={playName + ""}
-                href={playUrl}
-                image={image}
-                deletePlayHandler={() => deletePlay(id)}
-              />
-            );
-          })}
-        </SortableContext>
-      </Grid>
-    </DndContext>
+        <Grid
+          container
+          spacing={{ xs: 2, md: 3 }}
+          sx={{ width: "100%", paddingBlock: 3 }}
+        >
+          <SortableContext items={playIds}>
+            {playIds.map((id, idx) => {
+              const playName = idx + 1;
+              const playUrl = `plays/${id}`;
+              const image = plays[id]?.image;
+              return (
+                <PlaybookItem
+                  key={id}
+                  playId={id}
+                  playName={playName + ""}
+                  href={playUrl}
+                  image={image}
+                  deletePlayHandler={() => deletePlay(id)}
+                />
+              );
+            })}
+          </SortableContext>
+          <NewPlayCard
+            size={{ xs: 6, md: 3 }}
+            handleOnClick={handleFormationDialogOpen}
+          />
+        </Grid>
+      </DndContext>
+    </>
   );
 };
 

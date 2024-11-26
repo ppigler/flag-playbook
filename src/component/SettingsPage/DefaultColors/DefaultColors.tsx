@@ -23,7 +23,7 @@ const DefaultColors = () => {
   const [colorValues, setColorValues] = useState(colors);
 
   const isSetColorsDisabled = useMemo(
-    () => !isNumberOfPlayersSet || _.eq(colorValues, colors),
+    () => !isNumberOfPlayersSet || _.isEqual(colorValues, colors),
     [isNumberOfPlayersSet, colorValues, colors]
   );
 
@@ -38,6 +38,7 @@ const DefaultColors = () => {
           {(!isNumberOfPlayersSet ? [] : colorValues).map((color, idx) => (
             <Grid key={idx} size={{ xs: 6, md: 3 }}>
               <MuiColorInput
+                isAlphaHidden
                 label={
                   idx === 0
                     ? "Center"
@@ -45,7 +46,7 @@ const DefaultColors = () => {
                     ? "Quarterback"
                     : "Skill player"
                 }
-                format="rgb"
+                format="hex"
                 value={color}
                 onChange={(newValue) =>
                   setColorValues((state) => [
