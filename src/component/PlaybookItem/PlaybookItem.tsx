@@ -8,6 +8,7 @@ import {
   CardHeader,
   Grid2 as Grid,
   IconButton,
+  Tooltip,
 } from "@mui/material";
 import Image from "next/image";
 import Link from "next/link";
@@ -90,27 +91,32 @@ const PlaybookItem = ({
             ) : (
               <Play playId={playId} isViewOnly />
             )}
-
-            <IconButton
-              sx={{ position: "absolute", top: 16, cursor: "grab" }}
-              {...attributes}
-              {...listeners}
-            >
-              <MdDragHandle />
-            </IconButton>
+            <Tooltip title="Drag to re-order">
+              <IconButton
+                sx={{ position: "absolute", top: 16, cursor: "grab" }}
+                {...attributes}
+                {...listeners}
+              >
+                <MdDragHandle />
+              </IconButton>
+            </Tooltip>
           </CardContent>
           <CardActions>
             <Link passHref href={href} aria-label={`open play ${playName}`}>
-              <Button>Edit</Button>
+              <Tooltip title={`Edit play ${playName}`}>
+                <Button>Edit</Button>
+              </Tooltip>
             </Link>
-            <IconButton
-              onClick={handleOpenDeletePlayDialog}
-              sx={{ marginLeft: "auto" }}
-              size="small"
-              aria-label={`delete ${playName}`}
-            >
-              <TbTrash />
-            </IconButton>
+            <Tooltip title={`Delete play ${playName}`}>
+              <IconButton
+                onClick={handleOpenDeletePlayDialog}
+                sx={{ marginLeft: "auto" }}
+                size="small"
+                aria-label={`Delete play ${playName}`}
+              >
+                <TbTrash />
+              </IconButton>
+            </Tooltip>
           </CardActions>
         </Card>
       </Grid>

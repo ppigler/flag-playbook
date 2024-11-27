@@ -20,12 +20,6 @@ const SettingsPage = () => (
       <DefaultColors />
     </Grid>
     <Grid>
-      <Typography sx={{ marginBottom: 2 }}>Default colors</Typography>
-      <Typography variant="body2" sx={{ marginBottom: 2 }}>
-        Set the color for each position.
-      </Typography>
-    </Grid>
-    <Grid>
       <Typography sx={{ marginBottom: 2 }}>Formations</Typography>
       <Typography variant="body2" sx={{ marginBottom: 2 }}>
         Set default formations for your playbook. When creating plays, you start

@@ -41,8 +41,9 @@ const SelectFormationDialogContent = ({
     <>
       <DialogContent dividers>
         <DialogContentText id="select-formation-dialog-desc">
-          Select a formation from your base formations to start with. You can
-          later move the players around when you are editing the play.
+          Select a formation from your base formations defined in `Settings` to
+          start with. You can move the players around later when you edit the
+          play.
         </DialogContentText>
         <Grid container spacing={3} sx={{ marginTop: 4 }}>
           {Object.entries(formations).map(([id, { name, image }]) => (

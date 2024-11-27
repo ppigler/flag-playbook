@@ -11,6 +11,7 @@ import {
   Grid2 as Grid,
   IconButton,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import { v4 as uuid } from "uuid";
 import { KonvaEventObject, Node, NodeConfig } from "konva/lib/Node";
@@ -21,6 +22,7 @@ import { TbTrash } from "react-icons/tb";
 import { DEFAULT_PLAYER_POSITIONS } from "@/constants/positions";
 import _ from "lodash";
 import { Position } from "@/types/play";
+import NewPlayCard from "@/component/NewPlayCard/NewPlayCard";
 
 const Formations = () => {
   const formations = useSettingsStore.use.formations();
@@ -43,8 +45,12 @@ const Formations = () => {
     }));
 
   const fitStageIntoParentContainer = useCallback(() => {
-    const newWidth =
-      (document.getElementById("container")?.offsetWidth ?? WIDTH) - 100;
+    const containerElement =
+      document.getElementById("container")?.offsetWidth ?? WIDTH;
+    const bodyContainerElement =
+      document.getElementById("body-container")?.offsetWidth ?? WIDTH;
+
+    const newWidth = Math.min(containerElement, bodyContainerElement) - 100;
     const scale = newWidth / WIDTH;
     setScale(scale);
 
@@ -61,15 +67,15 @@ const Formations = () => {
     }
   }, [setRefs, newFormations]);
 
-  useEffect(() => {
-    fitStageIntoParentContainer();
-  }, [fitStageIntoParentContainer, newFormations, refs]);
+  useEffect(
+    () => fitStageIntoParentContainer(),
+    [fitStageIntoParentContainer, newFormations, refs]
+  );
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
+    if (typeof window !== "undefined")
       window.addEventListener("resize", fitStageIntoParentContainer);
-    }
-  }, []);
+  }, [fitStageIntoParentContainer]);
 
   useEffect(() => {
     const formationWithImages = Object.entries(formations).reduce(
@@ -109,7 +115,23 @@ const Formations = () => {
     }));
 
   const isSetFormationsDisabled =
-    !isNumberOfPlayersSet || _.eq(newFormations, formations);
+    !isNumberOfPlayersSet ||
+    _.isEqual(
+      Object.entries(newFormations).reduce(
+        (acc, [key, { positions, name }]) => ({
+          ...acc,
+          [key]: { positions, name },
+        }),
+        {}
+      ),
+      Object.entries(formations).reduce(
+        (acc, [key, { positions, name }]) => ({
+          ...acc,
+          [key]: { positions, name },
+        }),
+        {}
+      )
+    );
 
   const handleSetFormations = () => {
     const formationWithImages = Object.entries(newFormations).reduce(
@@ -187,9 +209,8 @@ const Formations = () => {
             }));
           };
 
-          const handleRemoveFormation = () => {
+          const handleRemoveFormation = () =>
             setNewFormations((state) => _.omit(state, id));
-          };
 
           return (
             <Grid key={id} size={{ xs: 12, md: 6 }}>
@@ -216,18 +237,23 @@ const Formations = () => {
                   </div>
                 </CardContent>
                 <CardActions>
-                  <IconButton onClick={handleRemoveFormation}>
-                    <TbTrash />
-                  </IconButton>
+                  <Tooltip title={`Delete ${name} formation`}>
+                    <IconButton onClick={handleRemoveFormation}>
+                      <TbTrash />
+                    </IconButton>
+                  </Tooltip>
                 </CardActions>
               </Card>
             </Grid>
           );
         })}
+        <NewPlayCard
+          size={{ xs: 12, md: 6 }}
+          disabled={!isNumberOfPlayersSet}
+          handleOnClick={handleAddFormation}
+          tooltipLabel="Add Formation"
+        />
       </Grid>
-      <Button disabled={!isNumberOfPlayersSet} onClick={handleAddFormation}>
-        Add formation
-      </Button>
       <Button onClick={handleSetFormations} disabled={isSetFormationsDisabled}>
         set
       </Button>

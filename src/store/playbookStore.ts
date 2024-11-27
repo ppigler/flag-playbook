@@ -89,30 +89,7 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
       handleOnDraw: (
         e?: KonvaEventObject<MouseEvent | TouchEvent, Node<NodeConfig>>
       ) => {
-        const validNodes = ["Circle", "Star", "Rect"];
-
         const isPointedAtNode = !!e?.target.className;
-        const nodes = e?.target.parent?.children;
-        const [node] = e?.target.parent?.find(`#${e.target.id()}`) ?? [];
-
-        if (nodes?.length ?? 0 > 0) {
-          nodes?.forEach((node) => {
-            if (node.id() === get().selectedPosition?.id) return;
-            node.setAttr("shadowBlur", 0);
-          });
-        }
-
-        // @ts-expect-error this is main layer
-        e?.target.children?.[2].children.forEach((node) => {
-          if (node.id() === get().selectedPosition?.id) return;
-          node.setAttr("shadowBlur", 0);
-        });
-
-        if (validNodes.includes(e?.target.className ?? "")) {
-          node.setAttr("shadowBlur", 5);
-        }
-
-        if (!get().selectedPosition) return;
 
         const pos = isPointedAtNode
           ? e?.target.parent?.getRelativePointerPosition()
@@ -240,10 +217,10 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
           (state) => {
             const id = e.target.id();
             const selectedPosition = state.positions.find(
-              (position) => position.id === id
+              (position) => position.id === id && !position.isSelected
             );
             return {
-              selectedPosition: selectedPosition ?? state.selectedPosition,
+              selectedPosition: selectedPosition,
               positions: state.positions.map((position) => ({
                 ...position,
                 isSelected:
@@ -261,7 +238,12 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
             const pos = e.target.getRelativePointerPosition();
             const selectedPositionIndex = state.selectedPosition?.index ?? -1;
             const selectedPositionId = state.selectedPosition?.id;
-            if (e.target.id() === selectedPositionId || !pos) return {};
+            if (
+              e.target.id() === selectedPositionId ||
+              !pos ||
+              !state.selectedPosition
+            )
+              return {};
 
             const x = Math.round(pos.x / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE;
             const y = Math.round(pos.y / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE;
