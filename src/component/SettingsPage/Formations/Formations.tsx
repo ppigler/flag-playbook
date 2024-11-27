@@ -11,6 +11,7 @@ import {
   Grid2 as Grid,
   IconButton,
   TextField,
+  Tooltip,
 } from "@mui/material";
 import { v4 as uuid } from "uuid";
 import { KonvaEventObject, Node, NodeConfig } from "konva/lib/Node";
@@ -236,9 +237,11 @@ const Formations = () => {
                   </div>
                 </CardContent>
                 <CardActions>
-                  <IconButton onClick={handleRemoveFormation}>
-                    <TbTrash />
-                  </IconButton>
+                  <Tooltip title={`Delete ${name} formation`}>
+                    <IconButton onClick={handleRemoveFormation}>
+                      <TbTrash />
+                    </IconButton>
+                  </Tooltip>
                 </CardActions>
               </Card>
             </Grid>

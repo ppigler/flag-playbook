@@ -13,7 +13,7 @@ const Play = dynamic(() => import("@/component/Play/Play"), {
 const PlayPage = ({ params }: { params: { play: string } }) => {
   const { play } = params;
   const plays = usePlayStore.use.plays();
-  const currentPlay = plays[play]?.order;
+  const currentPlay = (plays[play]?.order ?? 0) + 1;
 
   const [isAlertOpen, setIsAlertOpen] = useState(true);
   const handleCloseAlert = () => setIsAlertOpen(false);

@@ -7,11 +7,11 @@ import {
 import { Arrow, Circle, Layer, Line, Rect, Stage, Star } from "react-konva";
 import { KonvaEventObject, Node, NodeConfig } from "konva/lib/Node";
 import { StarConfig } from "konva/lib/shapes/Star";
-import { Fragment, RefObject } from "react";
+import { RefObject } from "react";
 import { Vector2d } from "konva/lib/types";
 import { Position, Route } from "@/types/play";
 import { Stage as StageType } from "konva/lib/Stage";
-import { Layer as LayerType } from "konva/lib/Layer";
+import { LayerConfig, Layer as LayerType } from "konva/lib/Layer";
 import { useSettingsStore } from "@/store/settingsStore";
 
 export type PlayType = {
@@ -78,7 +78,7 @@ const PlayEditor = ({
             stroke="rgba(0,0,0,0.2)"
           />
         </Layer>
-        <Layer>
+        <>
           {positions.map((position, positionIdx) => {
             const {
               route = [],
@@ -89,6 +89,27 @@ const PlayEditor = ({
             const tension = position.isRoundedRoute ? 0.5 : 0;
             const color = colors[positionIdx];
             const isCenter = positionIdx === 0;
+            const opacity =
+              position.isSelected ||
+              positions.every((position) => !position.isSelected)
+                ? 1
+                : 0.5;
+            const shadowBlur = position.isSelected ? 5 : 0;
+            const layerAttrs: LayerConfig = {
+              opacity,
+              onMouseOver: (
+                event: KonvaEventObject<MouseEvent, Node<NodeConfig>>
+              ) => {
+                event.currentTarget.setAttr("opacity", 1);
+                event.target.setAttr("shadowBlur", 5);
+              },
+              onMouseLeave: (
+                event: KonvaEventObject<MouseEvent, Node<NodeConfig>>
+              ) => {
+                event.currentTarget.setAttr("opacity", opacity);
+                event.target.setAttr("shadowBlur", shadowBlur);
+              },
+            };
             const attrs: NodeConfig & StarConfig = {
               id: position.id,
               x: position.x,
@@ -109,6 +130,7 @@ const PlayEditor = ({
               onTouchEnd: onDraw,
               rotation: 180,
               shadowColor: color,
+              shadowBlur,
               width: POSITION_RADIUS * 2,
               height: POSITION_RADIUS * 2,
               radius: position.isSelected
@@ -121,20 +143,7 @@ const PlayEditor = ({
                 POSITION_RADIUS * 0.75 * (position.isSelected ? 1.1 : 1),
             };
             return (
-              <Fragment key={position.id}>
-                {position.isKey ? (
-                  <Star key={key} {...attrs} />
-                ) : isCenter ? (
-                  <Rect
-                    key={key}
-                    {...attrs}
-                    offsetX={POSITION_RADIUS}
-                    offsetY={POSITION_RADIUS}
-                  />
-                ) : (
-                  <Circle key={key} {...attrs} />
-                )}
-
+              <Layer key={position.id} id={position.id} {...layerAttrs}>
                 <Arrow
                   key={`route-${position.id}`}
                   id={`route-${position.id}`}
@@ -184,10 +193,22 @@ const PlayEditor = ({
                   lineJoin="round"
                   dash={[0.001, 20]}
                 />
-              </Fragment>
+                {position.isKey ? (
+                  <Star key={key} {...attrs} />
+                ) : isCenter ? (
+                  <Rect
+                    key={key}
+                    {...attrs}
+                    offsetX={POSITION_RADIUS}
+                    offsetY={POSITION_RADIUS}
+                  />
+                ) : (
+                  <Circle key={key} {...attrs} />
+                )}
+              </Layer>
             );
           })}
-        </Layer>
+        </>
       </Stage>
     </div>
   );
