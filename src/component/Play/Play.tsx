@@ -3,13 +3,13 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { HEIGHT, WIDTH } from "@/constants/size";
 import { Stage as StageType } from "konva/lib/Stage";
-
 import PlayEditor from "./PlayEditor/PlayEditor";
 import { usePlaybookStore } from "@/store/playbookStore";
 import { usePlayStore } from "@/store/playStore";
 import { DEFAULT_PLAYER_POSITIONS } from "@/constants/positions";
 import { Position, Route } from "@/types/play";
 import { useSettingsStore } from "@/store/settingsStore";
+import { resetPlay } from "@/utils/play";
 
 type PlayProps = {
   playId?: string;
@@ -85,14 +85,21 @@ const Play = ({ playId, formationId, isViewOnly }: PlayProps) => {
 
   useEffect(() => {
     if (stageRef.current && playId && isInitialized) {
-      const image = stageRef.current.toDataURL({ pixelRatio: 1 });
+      const resetImage = resetPlay(stageRef);
+      const image = resetImage.toDataURL({ pixelRatio: 1 });
+
       renderImages(playId, image);
     }
   }, [positions, stageRef, routes, renderImages, playId, isInitialized]);
 
   useEffect(() => {
     if (isInitialized && playId && !isViewOnly) {
-      const data = JSON.stringify({ positions, routes });
+      const storedPositions = positions?.map((position) => ({
+        ...position,
+        isSelected: undefined,
+        isDragging: undefined,
+      }));
+      const data = JSON.stringify({ positions: storedPositions, routes });
       localStorage.setItem(playId, data);
       return void 0;
     }

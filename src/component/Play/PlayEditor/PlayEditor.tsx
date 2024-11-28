@@ -25,6 +25,7 @@ export type PlayType = {
   handleDragStart?: (e: KonvaEventObject<DragEvent, Node<NodeConfig>>) => void;
   handleDragEnd?: (e: KonvaEventObject<DragEvent, Node<NodeConfig>>) => void;
   handleClick?: (e: KonvaEventObject<DragEvent, Node<NodeConfig>>) => void;
+  isSelectDisabled?: boolean;
 };
 
 const PlayEditor = ({
@@ -38,6 +39,7 @@ const PlayEditor = ({
   dragBound,
   positions = [],
   routes = [],
+  isSelectDisabled,
 }: PlayType) => {
   const colors = useSettingsStore.use.colors();
 
@@ -63,8 +65,8 @@ const PlayEditor = ({
         onTouchStart={onDraw}
         onTouchEnd={onDraw}
       >
-        <Layer ref={drawLayerRef} />
-        <Layer>
+        <Layer key="draw-line" id="draw-line" ref={drawLayerRef} />
+        <Layer key="los-line" id="los-line">
           <Line
             key="los"
             id="los-line"
@@ -90,24 +92,23 @@ const PlayEditor = ({
             const color = colors[positionIdx];
             const isCenter = positionIdx === 0;
             const opacity =
+              isSelectDisabled ||
               position.isSelected ||
               positions.every((position) => !position.isSelected)
                 ? 1
                 : 0.5;
-            const shadowBlur = position.isSelected ? 5 : 0;
+            const shadowBlur = position.isSelected && !isSelectDisabled ? 5 : 0;
             const layerAttrs: LayerConfig = {
               opacity,
               onMouseOver: (
                 event: KonvaEventObject<MouseEvent, Node<NodeConfig>>
               ) => {
                 event.currentTarget.setAttr("opacity", 1);
-                event.target.setAttr("shadowBlur", 5);
               },
               onMouseLeave: (
                 event: KonvaEventObject<MouseEvent, Node<NodeConfig>>
               ) => {
                 event.currentTarget.setAttr("opacity", opacity);
-                event.target.setAttr("shadowBlur", shadowBlur);
               },
             };
             const attrs: NodeConfig & StarConfig = {
@@ -123,6 +124,14 @@ const PlayEditor = ({
               onTap: handleClick,
               onMouseDown: onDraw,
               onMouseEnter: onDraw,
+              onMouseOver: (event: KonvaEventObject<MouseEvent>) => {
+                event.target.setAttr("shadowBlur", 5);
+                onDraw?.();
+              },
+              onMouseLeave: (event: KonvaEventObject<MouseEvent>) => {
+                event.target.setAttr("shadowBlur", shadowBlur);
+                onDraw?.();
+              },
               onMouseUp: onDraw,
               onMouseMove: onDraw,
               onTouchMove: onDraw,

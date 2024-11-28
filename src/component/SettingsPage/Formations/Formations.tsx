@@ -23,6 +23,7 @@ import { DEFAULT_PLAYER_POSITIONS } from "@/constants/positions";
 import _ from "lodash";
 import { Position } from "@/types/play";
 import NewPlayCard from "@/component/NewPlayCard/NewPlayCard";
+import { resetPlay } from "@/utils/play";
 
 const Formations = () => {
   const formations = useSettingsStore.use.formations();
@@ -136,7 +137,8 @@ const Formations = () => {
   const handleSetFormations = () => {
     const formationWithImages = Object.entries(newFormations).reduce(
       (acc, [formationId, formationData], idx) => {
-        const image = refs[idx].current?.toDataURL({ pixelRatio: 1 }) + "";
+        const resetImage = resetPlay(refs[idx]);
+        const image = resetImage.toDataURL({ pixelRatio: 1 });
         return { ...acc, [formationId]: { ...formationData, image } };
       },
       {} as Record<
@@ -233,6 +235,7 @@ const Formations = () => {
                       dragBound={dragBound}
                       handleDragStart={handleDragStart}
                       handleDragEnd={handleDragEnd}
+                      isSelectDisabled
                     />
                   </div>
                 </CardContent>
