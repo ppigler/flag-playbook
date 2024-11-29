@@ -102,6 +102,7 @@ const Formations = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [colors]);
 
+  // generic dragbound
   const dragBound = ({ x, y }: Vector2d) => ({
     x: Math.min(
       Math.max(POSITION_RADIUS * scale, x),
@@ -225,6 +226,22 @@ const Formations = () => {
           const handleRemoveFormation = () =>
             setNewFormations((state) => _.omit(state, id));
 
+          // add center and qb dragbound
+          const centerDragBound = ({ x }: Vector2d) => ({
+            x: Math.min(
+              Math.max(POSITION_RADIUS * scale, x),
+              (WIDTH - POSITION_RADIUS) * scale
+            ),
+            y: (HEIGHT / 2) * scale,
+          });
+          const qbDragBound = ({ y }: Vector2d) => ({
+            x: positions[0].x * scale,
+            y: Math.max(
+              Math.min(y, (HEIGHT - POSITION_RADIUS) * scale),
+              (HEIGHT / 2) * scale
+            ),
+          });
+
           return (
             <Grid key={id} size={{ xs: 12, md: 6 }}>
               <Card>
@@ -244,6 +261,8 @@ const Formations = () => {
                       positions={positions}
                       stageRef={refs[idx]}
                       dragBound={dragBound}
+                      centerDragBound={centerDragBound}
+                      qbDragBound={qbDragBound}
                       handleDragStart={handleDragStart}
                       handleDragEnd={handleDragEnd}
                       isSelectDisabled
