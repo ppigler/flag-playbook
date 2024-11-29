@@ -46,6 +46,8 @@ type PlaybookStore = PlaybookState & {
     e?: KonvaEventObject<MouseEvent | TouchEvent, Node<NodeConfig>>
   ) => void;
   dragBound: ({ x, y }: Vector2d) => Vector2d;
+  qbDragbound: ({ x, y }: Vector2d) => Vector2d;
+  centerDragBound: ({ x, y }: Vector2d) => Vector2d;
 
   initializeState: (props?: Partial<InitPlaybookProps>) => void;
 };
@@ -412,6 +414,20 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
           Math.max(POSITION_RADIUS * get().scale, x),
           (WIDTH - POSITION_RADIUS) * get().scale
         ),
+        y: Math.max(
+          Math.min(y, (HEIGHT - POSITION_RADIUS) * get().scale),
+          (HEIGHT / 2) * get().scale
+        ),
+      }),
+      centerDragBound: ({ x }: Vector2d) => ({
+        x: Math.min(
+          Math.max(POSITION_RADIUS * get().scale, x),
+          (WIDTH - POSITION_RADIUS) * get().scale
+        ),
+        y: (HEIGHT / 2) * get().scale,
+      }),
+      qbDragbound: ({ y }: Vector2d) => ({
+        x: get().positions[0].x * get().scale,
         y: Math.max(y, (HEIGHT / 2) * get().scale),
       }),
     }),

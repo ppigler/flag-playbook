@@ -23,6 +23,8 @@ const Play = ({ playId, formationId, isViewOnly }: PlayProps) => {
     handleRouteDraw,
     positions,
     dragBound,
+    centerDragBound,
+    qbDragBound,
     routes,
     handleDragStart,
     handleDragEnd,
@@ -37,6 +39,8 @@ const Play = ({ playId, formationId, isViewOnly }: PlayProps) => {
         usePlaybookStore.use.handleRouteDraw(),
         usePlaybookStore.use.positions(),
         usePlaybookStore.use.dragBound(),
+        usePlaybookStore.use.centerDragBound(),
+        usePlaybookStore.use.qbDragbound(),
         usePlaybookStore.use.routes(),
         usePlaybookStore.use.handleDragStart(),
         usePlaybookStore.use.handleDragEnd(),
@@ -152,6 +156,8 @@ const Play = ({ playId, formationId, isViewOnly }: PlayProps) => {
       handleDragEnd={handleDragEnd}
       onDraw={onDraw}
       dragBound={dragBound}
+      centerDragBound={centerDragBound}
+      qbDragBound={qbDragBound}
       drawLayerRef={drawLayerRef!}
       stageRef={stageRef}
       positions={((isViewOnly ? initialPositions : positions) ?? []).slice(

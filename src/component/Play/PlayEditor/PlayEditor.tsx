@@ -20,6 +20,8 @@ export type PlayType = {
   stageRef?: RefObject<StageType>;
   drawLayerRef?: RefObject<LayerType>;
   dragBound?: ({ x, y }: Vector2d) => Vector2d;
+  centerDragBound?: ({ x, y }: Vector2d) => Vector2d;
+  qbDragBound?: ({ x, y }: Vector2d) => Vector2d;
   positions?: Position[];
   routes?: Route[];
   handleDragStart?: (e: KonvaEventObject<DragEvent, Node<NodeConfig>>) => void;
@@ -37,6 +39,8 @@ const PlayEditor = ({
   handleClick,
   onDraw,
   dragBound,
+  centerDragBound,
+  qbDragBound,
   positions = [],
   routes = [],
   isSelectDisabled,
@@ -91,6 +95,7 @@ const PlayEditor = ({
             const tension = position.isRoundedRoute ? 0.5 : 0;
             const color = colors[positionIdx];
             const isCenter = positionIdx === 0;
+            const isQb = positionIdx === 1;
             const opacity =
               isSelectDisabled ||
               position.isSelected ||
@@ -117,7 +122,13 @@ const PlayEditor = ({
               y: position.y,
               fill: color,
               draggable: !!(handleDragStart && handleDragEnd),
-              dragBoundFunc: dragBound,
+
+              // assign corrent dragBoundFuncs based on position
+              dragBoundFunc: isCenter
+                ? centerDragBound
+                : isQb
+                ? qbDragBound
+                : dragBound,
               onDragStart: handleDragStart,
               onDragEnd: handleDragEnd,
               onClick: handleClick,
