@@ -1,7 +1,12 @@
 "use client";
 
 import PlayEditor from "@/component/Play/PlayEditor/PlayEditor";
-import { BLOCK_SNAP_SIZE, HEIGHT, WIDTH } from "@/constants/size";
+import {
+  BLOCK_SNAP_SIZE,
+  HEIGHT,
+  POSITION_RADIUS,
+  WIDTH,
+} from "@/constants/size";
 import { useSettingsStore } from "@/store/settingsStore";
 import {
   Button,
@@ -98,8 +103,14 @@ const Formations = () => {
   }, [colors]);
 
   const dragBound = ({ x, y }: Vector2d) => ({
-    x: Math.max(0, Math.min(x, WIDTH * scale)),
-    y: Math.max(Math.min(y, HEIGHT * scale), (HEIGHT / 2) * scale),
+    x: Math.min(
+      Math.max(POSITION_RADIUS * scale, x),
+      (WIDTH - POSITION_RADIUS) * scale
+    ),
+    y: Math.max(
+      Math.min(y, (HEIGHT - POSITION_RADIUS) * scale),
+      (HEIGHT / 2) * scale
+    ),
   });
 
   const handleAddFormation = () =>
