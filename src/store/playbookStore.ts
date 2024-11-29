@@ -177,6 +177,23 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
               (player) => player.id === id
             );
             if (!oldPosition) return {};
+            const newRoute = state.routes[oldPosition.index].route.map(
+              (route) => ({
+                x:
+                  Math.round(
+                    (route.x + newPosition.x - oldPosition.x) / BLOCK_SNAP_SIZE
+                  ) * BLOCK_SNAP_SIZE,
+                y:
+                  Math.round(
+                    (route.y + newPosition.y - oldPosition.y) / BLOCK_SNAP_SIZE
+                  ) * BLOCK_SNAP_SIZE,
+              })
+            );
+
+            // determine motion length from new route
+            const motionLength = newRoute.findIndex(
+              (route) => route.y < HEIGHT / 2
+            );
 
             return {
               selectedPosition: oldPosition,
@@ -189,20 +206,22 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
               routes: [
                 ...state.routes.slice(0, oldPosition.index),
                 {
-                  route: state.routes[oldPosition.index].route.map((route) => ({
-                    x:
-                      Math.round(
-                        (route.x + newPosition.x - oldPosition.x) /
-                          BLOCK_SNAP_SIZE
-                      ) * BLOCK_SNAP_SIZE,
-                    y:
-                      Math.round(
-                        (route.y + newPosition.y - oldPosition.y) /
-                          BLOCK_SNAP_SIZE
-                      ) * BLOCK_SNAP_SIZE,
-                  })),
-                  option: state.routes[oldPosition.index].option,
-                  motion: state.routes[oldPosition.index].motion,
+                  route: newRoute,
+                  option: state.routes[oldPosition.index].option.map(
+                    (option) => ({
+                      x:
+                        Math.round(
+                          (option.x + newPosition.x - oldPosition.x) /
+                            BLOCK_SNAP_SIZE
+                        ) * BLOCK_SNAP_SIZE,
+                      y:
+                        Math.round(
+                          (option.y + newPosition.y - oldPosition.y) /
+                            BLOCK_SNAP_SIZE
+                        ) * BLOCK_SNAP_SIZE,
+                    })
+                  ),
+                  motion: motionLength > -1 ? motionLength : 0,
                 },
                 ...state.routes.slice(oldPosition.index + 1),
               ],
