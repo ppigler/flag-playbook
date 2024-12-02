@@ -13,6 +13,7 @@ import { Position, Route } from "@/types/play";
 import { Stage as StageType } from "konva/lib/Stage";
 import { LayerConfig, Layer as LayerType } from "konva/lib/Layer";
 import { useSettingsStore } from "@/store/settingsStore";
+import { Container } from "konva/lib/Container";
 
 export type PlayType = {
   handleRouteDraw?: (e: KonvaEventObject<MouseEvent, Node<NodeConfig>>) => void;
@@ -143,6 +144,19 @@ const PlayEditor = ({
                 event.target.setAttr("shadowBlur", shadowBlur);
                 onDraw?.();
               },
+              onDragMove: isCenter
+                ? (event: KonvaEventObject<DragEvent, Node>) => {
+                    const x = event.target.x();
+                    const qbLayer = event.target.parent?.parent?.children.find(
+                      (child) => child.id() === "qb"
+                    ) as Container;
+                    const qbNode = qbLayer?.children.find(
+                      (child) => child.id() === "qb"
+                    ) as Node;
+
+                    qbNode.setAttr("x", x);
+                  }
+                : undefined,
               onMouseUp: onDraw,
               onMouseMove: onDraw,
               onTouchMove: onDraw,

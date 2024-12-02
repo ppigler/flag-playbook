@@ -169,16 +169,24 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
         set(
           (state) => {
             const id = e.target.id();
-            const newPosition = {
-              x: Math.round(e.target.x() / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE,
-              y: Math.round(e.target.y() / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE,
-              isSelected: true,
-              isDragging: true,
-            };
+
             const oldPosition = state.positions.find(
               (player) => player.id === id
             );
             if (!oldPosition) return {};
+
+            const newPosition = {
+              x: Math.round(e.target.x() / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE,
+              y: Math.round(e.target.y() / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE,
+              isSelected: true,
+              isDragging: false,
+            };
+            const isCenter = id === "center";
+            const qbPosition = state.positions.find(
+              (player) => player.id === "qb"
+            );
+            const newQbPosition = { ...qbPosition, x: newPosition.x };
+
             const newRoute = state.routes[oldPosition.index].route.map(
               (route) => ({
                 x:
@@ -191,6 +199,16 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
                   ) * BLOCK_SNAP_SIZE,
               })
             );
+            const newQbRoute = qbPosition
+              ? state.routes[qbPosition.index].route.map((route) => ({
+                  ...route,
+                  x:
+                    Math.round(
+                      (route.x + newPosition.x - oldPosition.x) /
+                        BLOCK_SNAP_SIZE
+                    ) * BLOCK_SNAP_SIZE,
+                }))
+              : [];
 
             // determine motion length from new route
             const motionLength = newRoute.findIndex(
@@ -203,14 +221,14 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
               positions: state.positions.map((position) => ({
                 ...position,
                 ...(position.id === id ? newPosition : {}),
+                ...(position.id === "qb" && isCenter ? newQbPosition : {}),
               })),
               // updateRoutes
-              routes: [
-                ...state.routes.slice(0, oldPosition.index),
-                {
-                  route: newRoute,
-                  option: state.routes[oldPosition.index].option.map(
-                    (option) => ({
+              routes: state.routes.map((route, index) => {
+                if (index === oldPosition.index) {
+                  return {
+                    route: newRoute,
+                    option: route.option.map((option) => ({
                       x:
                         Math.round(
                           (option.x + newPosition.x - oldPosition.x) /
@@ -221,12 +239,49 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
                           (option.y + newPosition.y - oldPosition.y) /
                             BLOCK_SNAP_SIZE
                         ) * BLOCK_SNAP_SIZE,
-                    })
-                  ),
-                  motion: motionLength > -1 ? motionLength : 0,
-                },
-                ...state.routes.slice(oldPosition.index + 1),
-              ],
+                    })),
+                    motion: motionLength > -1 ? motionLength : 0,
+                  };
+                }
+                if (qbPosition && index === qbPosition?.index) {
+                  return {
+                    route: newQbRoute,
+                    option: route.option.map((option) => ({
+                      x:
+                        Math.round(
+                          (option.x + newQbPosition.x - oldPosition.x) /
+                            BLOCK_SNAP_SIZE
+                        ) * BLOCK_SNAP_SIZE,
+                      y: option.y,
+                    })),
+                    motion: route.motion,
+                  };
+                }
+                return route;
+              }),
+
+              // routes: [
+              //   ...state.routes.slice(0, oldPosition.index),
+              //   {
+              //     route: newRoute,
+              //     option: state.routes[oldPosition.index].option.map(
+              //       (option) => ({
+              //         x:
+              //           Math.round(
+              //             (option.x + newPosition.x - oldPosition.x) /
+              //               BLOCK_SNAP_SIZE
+              //           ) * BLOCK_SNAP_SIZE,
+              //         y:
+              //           Math.round(
+              //             (option.y + newPosition.y - oldPosition.y) /
+              //               BLOCK_SNAP_SIZE
+              //           ) * BLOCK_SNAP_SIZE,
+              //       })
+              //     ),
+              //     motion: motionLength > -1 ? motionLength : 0,
+              //   },
+              //   ...state.routes.slice(oldPosition.index + 1),
+              // ],
             };
           },
           undefined,
