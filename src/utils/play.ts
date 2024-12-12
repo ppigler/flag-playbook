@@ -32,8 +32,11 @@ export const resetPlay = (imageRef: RefObject<Stage>) => {
 export const toSnapped = (pos: number) =>
   Math.round(pos / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE;
 
-export const getRoutePoints = (routeObject: Route, position: Position) => {
-  const { route, motion } = routeObject;
+export const getRoutePoints = (
+  routeObject: Route | undefined,
+  position: Position
+) => {
+  const { route, motion } = routeObject ?? { route: [], motion: 0 };
   if (route.length - motion <= 0) return [];
   return route.reduce(
     (acc, { x, y }, routeStep) =>
@@ -51,10 +54,10 @@ export const getOptionRoutePoints = (routeObject: Route) => {
 };
 
 export const getMotionRoutePoints = (
-  routeObject: Route,
+  routeObject: Route | undefined,
   position: Position
 ) => {
-  const { route, motion } = routeObject;
+  const { route, motion } = routeObject ?? { route: [], motion: 0 };
   return route.reduce(
     (acc, { x, y }, routeStep) =>
       routeStep + 1 <= motion ? [...acc, x, y] : acc,
