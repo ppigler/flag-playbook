@@ -1,7 +1,7 @@
 "use client";
 
 import PlayEditor from "@/component/Play/PlayEditor/PlayEditor";
-import { BLOCK_SNAP_SIZE, HEIGHT, WIDTH } from "@/constants/size";
+import { HEIGHT, POSITION_RADIUS, WIDTH } from "@/constants/size";
 import { useSettingsStore } from "@/store/settingsStore";
 import {
   Button,
@@ -23,7 +23,7 @@ import { DEFAULT_PLAYER_POSITIONS } from "@/constants/positions";
 import _ from "lodash";
 import { Position } from "@/types/play";
 import NewPlayCard from "@/component/NewPlayCard/NewPlayCard";
-import { resetPlay } from "@/utils/play";
+import { resetPlay, toSnapped } from "@/utils/play";
 
 const Formations = () => {
   const formations = useSettingsStore.use.formations();
@@ -97,9 +97,16 @@ const Formations = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [colors]);
 
+  // generic dragbound
   const dragBound = ({ x, y }: Vector2d) => ({
-    x: Math.max(0, Math.min(x, WIDTH * scale)),
-    y: Math.max(Math.min(y, HEIGHT * scale), (HEIGHT / 2) * scale),
+    x: Math.min(
+      Math.max(POSITION_RADIUS * scale, x),
+      (WIDTH - POSITION_RADIUS) * scale
+    ),
+    y: Math.max(
+      Math.min(y, (HEIGHT - POSITION_RADIUS) * scale),
+      (HEIGHT / 2) * scale
+    ),
   });
 
   const handleAddFormation = () =>
@@ -188,8 +195,8 @@ const Formations = () => {
           ) => {
             const positionId = e.target.id();
             const newPosition = {
-              x: Math.round(e.target.x() / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE,
-              y: Math.round(e.target.y() / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE,
+              x: toSnapped(e.target.x()),
+              y: toSnapped(e.target.y()),
               isSelected: true,
               isDragging: true,
             };
@@ -214,6 +221,22 @@ const Formations = () => {
           const handleRemoveFormation = () =>
             setNewFormations((state) => _.omit(state, id));
 
+          // add center and qb dragbound
+          const centerDragBound = ({ x }: Vector2d) => ({
+            x: Math.min(
+              Math.max(POSITION_RADIUS * scale, x),
+              (WIDTH - POSITION_RADIUS) * scale
+            ),
+            y: (HEIGHT / 2) * scale,
+          });
+          const qbDragBound = ({ y }: Vector2d) => ({
+            x: positions[0].x * scale,
+            y: Math.max(
+              Math.min(y, (HEIGHT - POSITION_RADIUS) * scale),
+              (HEIGHT / 2) * scale
+            ),
+          });
+
           return (
             <Grid key={id} size={{ xs: 12, md: 6 }}>
               <Card>
@@ -233,6 +256,8 @@ const Formations = () => {
                       positions={positions}
                       stageRef={refs[idx]}
                       dragBound={dragBound}
+                      centerDragBound={centerDragBound}
+                      qbDragBound={qbDragBound}
                       handleDragStart={handleDragStart}
                       handleDragEnd={handleDragEnd}
                       isSelectDisabled
