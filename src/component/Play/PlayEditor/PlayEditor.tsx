@@ -1,9 +1,4 @@
-import {
-  BLOCK_SNAP_SIZE,
-  HEIGHT,
-  POSITION_RADIUS,
-  WIDTH,
-} from "@/constants/size";
+import { HEIGHT, POSITION_RADIUS, WIDTH } from "@/constants/size";
 import { Arrow, Circle, Layer, Line, Rect, Stage, Star } from "react-konva";
 import { KonvaEventObject, Node, NodeConfig } from "konva/lib/Node";
 import { StarConfig } from "konva/lib/shapes/Star";
@@ -14,6 +9,13 @@ import { Stage as StageType } from "konva/lib/Stage";
 import { LayerConfig, Layer as LayerType } from "konva/lib/Layer";
 import { useSettingsStore } from "@/store/settingsStore";
 import { Container } from "konva/lib/Container";
+import {
+  getMotionRoutePoints,
+  getOptionRoutePoints,
+  getRoutePoints,
+  toSnapped,
+} from "@/utils/play";
+import { OPACITY, POINTS, SHADOW_BLUR, X, Y } from "@/constants/editorAttrs";
 
 export type PlayType = {
   handleRouteDraw?: (e: KonvaEventObject<MouseEvent, Node<NodeConfig>>) => void;
@@ -75,23 +77,14 @@ const PlayEditor = ({
           <Line
             key="los"
             id="los-line"
-            points={[
-              0,
-              Math.round(HEIGHT / 2 / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE,
-              WIDTH,
-              Math.round(HEIGHT / 2 / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE,
-            ]}
+            points={[0, toSnapped(HEIGHT / 2), WIDTH, toSnapped(HEIGHT / 2)]}
             strokeWidth={2}
             stroke="rgba(0,0,0,0.2)"
           />
         </Layer>
         <>
           {positions.map((position, positionIdx) => {
-            const {
-              route = [],
-              option = [],
-              motion = 0,
-            } = routes[positionIdx] ?? {};
+            const route = routes[positionIdx];
             const key = `position-${position.id}`;
             const tension = position.isRoundedRoute ? 0.5 : 0;
             const color = colors[positionIdx];
@@ -109,12 +102,12 @@ const PlayEditor = ({
               onMouseOver: (
                 event: KonvaEventObject<MouseEvent, Node<NodeConfig>>
               ) => {
-                event.currentTarget.setAttr("opacity", 1);
+                event.currentTarget.setAttr(OPACITY, 1);
               },
               onMouseLeave: (
                 event: KonvaEventObject<MouseEvent, Node<NodeConfig>>
               ) => {
-                event.currentTarget.setAttr("opacity", opacity);
+                event.currentTarget.setAttr(OPACITY, opacity);
               },
             };
             const attrs: NodeConfig & StarConfig = {
@@ -137,26 +130,92 @@ const PlayEditor = ({
               onMouseDown: onDraw,
               onMouseEnter: onDraw,
               onMouseOver: (event: KonvaEventObject<MouseEvent>) => {
-                event.target.setAttr("shadowBlur", 5);
+                event.target.setAttr(SHADOW_BLUR, 5);
                 onDraw?.();
               },
               onMouseLeave: (event: KonvaEventObject<MouseEvent>) => {
-                event.target.setAttr("shadowBlur", shadowBlur);
+                event.target.setAttr(SHADOW_BLUR, shadowBlur);
                 onDraw?.();
               },
-              onDragMove: isCenter
-                ? (event: KonvaEventObject<DragEvent, Node>) => {
-                    const x = event.target.x();
-                    const qbLayer = event.target.parent?.parent?.children.find(
-                      (child) => child.id() === "qb"
-                    ) as Container;
-                    const qbNode = qbLayer?.children.find(
-                      (child) => child.id() === "qb"
-                    ) as Node;
+              onDragMove: (event: KonvaEventObject<DragEvent, Node>) => {
+                const id = event.target.id();
+                const draggedPosition = positions.find(
+                  (position) => position.id === id
+                );
 
-                    qbNode.setAttr("x", x);
+                if (!draggedPosition) return;
+
+                const x = event.target.x();
+                const y = event.target.y();
+
+                event.target.setAttr(X, toSnapped(x));
+                event.target.setAttr(Y, toSnapped(y));
+
+                const diffX = x - draggedPosition.x;
+                const diffY = y - draggedPosition.y;
+
+                if (isCenter) {
+                  const qbLayer = event.target.parent?.parent?.children.find(
+                    (child) => child.id() === "qb"
+                  ) as Container;
+                  const qbNode = qbLayer?.children.find(
+                    (child) => child.id() === "qb"
+                  ) as Node;
+
+                  qbNode.setAttr(X, toSnapped(x));
+                }
+
+                const selectedLayer =
+                  event.target.parent?.children.filter(
+                    (child) => child.id() !== event.target.id()
+                  ) ?? [];
+                const qbLayer =
+                  (
+                    event.target.parent?.parent?.children.find(
+                      (child) => child.id() === "qb"
+                    ) as Container
+                  ).children.filter((child) => child.id() !== "qb") ?? [];
+
+                const relatedNodes = isCenter
+                  ? [...selectedLayer, ...qbLayer]
+                  : selectedLayer;
+
+                relatedNodes?.forEach((node) => {
+                  const nodeId = node.parent?.id();
+                  const selectedNode = node.parent?.children.find(
+                    (child) => child.id() === nodeId
+                  );
+                  const nodePosition = positions.find(
+                    (pos) => pos.id === nodeId
+                  );
+                  if (!nodePosition || !selectedNode) return;
+
+                  const nodeRoute = routes[nodePosition.index];
+                  const nodeX = selectedNode.x();
+                  const nodeY = selectedNode.y();
+                  const isOption = node.id().includes("option");
+
+                  let route;
+                  if (isOption) {
+                    route = nodeRoute.option;
+                  } else {
+                    route = nodeRoute.route;
                   }
-                : undefined,
+
+                  const updatedRoute = route.map(({ x, y }) => ({
+                    x: toSnapped(x + diffX),
+                    y: toSnapped(y + diffY),
+                  }));
+                  const points = updatedRoute.reduce(
+                    (acc, curr) => [...acc, curr.x, curr.y],
+                    isOption
+                      ? []
+                      : ([toSnapped(nodeX), toSnapped(nodeY)] as number[])
+                  );
+
+                  node.setAttr(POINTS, points);
+                });
+              },
               onMouseUp: onDraw,
               onMouseMove: onDraw,
               onTouchMove: onDraw,
@@ -181,17 +240,7 @@ const PlayEditor = ({
                 <Arrow
                   key={`route-${position.id}`}
                   id={`route-${position.id}`}
-                  points={
-                    route.length - motion > 0
-                      ? route.reduce(
-                          (acc, { x, y }, routeStepIdx) =>
-                            routeStepIdx < motion - 1 ? acc : [...acc, x, y],
-                          motion === 0
-                            ? [position.x, position.y]
-                            : ([] as number[])
-                        )
-                      : []
-                  }
+                  points={getRoutePoints(route, position)}
                   stroke={color}
                   strokeWidth={8}
                   tension={tension}
@@ -199,14 +248,7 @@ const PlayEditor = ({
                 <Arrow
                   key={`option-${position.id}`}
                   id={`option-${position.id}`}
-                  points={
-                    option.length > 0
-                      ? option.reduce(
-                          (acc, { x, y }) => [...acc, x, y],
-                          [] as number[]
-                        )
-                      : []
-                  }
+                  points={getOptionRoutePoints(route)}
                   stroke={color}
                   strokeWidth={8}
                   dash={[POSITION_RADIUS, 10]}
@@ -215,11 +257,7 @@ const PlayEditor = ({
                 <Line
                   key={`motion-${position.id}`}
                   id={`motion-${position.id}`}
-                  points={route.reduce(
-                    (acc, { x, y }, idx) =>
-                      idx < motion ? [...acc, x, y] : acc,
-                    [position.x, position.y]
-                  )}
+                  points={getMotionRoutePoints(route, position)}
                   stroke={color}
                   strokeWidth={10}
                   tension={tension}

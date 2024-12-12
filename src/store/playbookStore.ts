@@ -15,6 +15,7 @@ import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 import { createSelectors } from "./utils";
 import { DEFAULT_PLAYER_POSITIONS } from "@/constants/positions";
+import { toSnapped } from "@/utils/play";
 
 type InitPlaybookProps = {
   positions: Position[];
@@ -102,12 +103,8 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
         const drawLineHorizontal: Konva.Line[] | undefined =
           get().drawLayerRef?.current?.find("#draw-line-horizontal");
 
-        const x = pos?.x
-          ? Math.round(pos.x / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE
-          : 0;
-        const y = pos?.y
-          ? Math.round(pos.y / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE
-          : 0;
+        const x = pos?.x ? toSnapped(pos.x) : 0;
+        const y = pos?.y ? toSnapped(pos.y) : 0;
 
         if (!drawLineHorizontal?.length && !drawLineHorizontal?.length) {
           get().drawLayerRef?.current?.add(
@@ -176,8 +173,8 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
             if (!oldPosition) return {};
 
             const newPosition = {
-              x: Math.round(e.target.x() / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE,
-              y: Math.round(e.target.y() / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE,
+              x: toSnapped(e.target.x()),
+              y: toSnapped(e.target.y()),
               isSelected: true,
               isDragging: false,
             };
@@ -189,31 +186,22 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
 
             const newRoute = state.routes[oldPosition.index].route.map(
               (route) => ({
-                x:
-                  Math.round(
-                    (route.x + newPosition.x - oldPosition.x) / BLOCK_SNAP_SIZE
-                  ) * BLOCK_SNAP_SIZE,
-                y:
-                  Math.round(
-                    (route.y + newPosition.y - oldPosition.y) / BLOCK_SNAP_SIZE
-                  ) * BLOCK_SNAP_SIZE,
+                x: toSnapped(route.x + newPosition.x - oldPosition.x),
+                y: toSnapped(route.y + newPosition.y - oldPosition.y),
               })
             );
             const newQbRoute = qbPosition
               ? state.routes[qbPosition.index].route.map((route) => ({
                   ...route,
-                  x:
-                    Math.round(
-                      (route.x + newPosition.x - oldPosition.x) /
-                        BLOCK_SNAP_SIZE
-                    ) * BLOCK_SNAP_SIZE,
+                  x: toSnapped(route.x + newPosition.x - oldPosition.x),
                 }))
               : [];
 
             // determine motion length from new route
-            const motionLength = newRoute.findIndex(
-              (route) => route.y < HEIGHT / 2
-            );
+            const motionLength =
+              state.routes[oldPosition.index].motion === -1
+                ? -1
+                : newRoute.findIndex((route) => route.y < HEIGHT / 2);
 
             return {
               selectedPosition: oldPosition,
@@ -229,29 +217,17 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
                   return {
                     route: newRoute,
                     option: route.option.map((option) => ({
-                      x:
-                        Math.round(
-                          (option.x + newPosition.x - oldPosition.x) /
-                            BLOCK_SNAP_SIZE
-                        ) * BLOCK_SNAP_SIZE,
-                      y:
-                        Math.round(
-                          (option.y + newPosition.y - oldPosition.y) /
-                            BLOCK_SNAP_SIZE
-                        ) * BLOCK_SNAP_SIZE,
+                      x: toSnapped(option.x + newPosition.x - oldPosition.x),
+                      y: toSnapped(option.y + newPosition.y - oldPosition.y),
                     })),
                     motion: motionLength > -1 ? motionLength : 0,
                   };
                 }
-                if (qbPosition && index === qbPosition?.index) {
+                if (isCenter && qbPosition && index === qbPosition?.index) {
                   return {
                     route: newQbRoute,
                     option: route.option.map((option) => ({
-                      x:
-                        Math.round(
-                          (option.x + newQbPosition.x - oldPosition.x) /
-                            BLOCK_SNAP_SIZE
-                        ) * BLOCK_SNAP_SIZE,
+                      x: toSnapped(option.x + newQbPosition.x - oldPosition.x),
                       y: option.y,
                     })),
                     motion: route.motion,
@@ -259,29 +235,6 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
                 }
                 return route;
               }),
-
-              // routes: [
-              //   ...state.routes.slice(0, oldPosition.index),
-              //   {
-              //     route: newRoute,
-              //     option: state.routes[oldPosition.index].option.map(
-              //       (option) => ({
-              //         x:
-              //           Math.round(
-              //             (option.x + newPosition.x - oldPosition.x) /
-              //               BLOCK_SNAP_SIZE
-              //           ) * BLOCK_SNAP_SIZE,
-              //         y:
-              //           Math.round(
-              //             (option.y + newPosition.y - oldPosition.y) /
-              //               BLOCK_SNAP_SIZE
-              //           ) * BLOCK_SNAP_SIZE,
-              //       })
-              //     ),
-              //     motion: motionLength > -1 ? motionLength : 0,
-              //   },
-              //   ...state.routes.slice(oldPosition.index + 1),
-              // ],
             };
           },
           undefined,
@@ -321,8 +274,8 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
             )
               return {};
 
-            const x = Math.round(pos.x / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE;
-            const y = Math.round(pos.y / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE;
+            const x = toSnapped(pos.x);
+            const y = toSnapped(pos.y);
             const { route, option, motion } =
               state.routes[selectedPositionIndex];
             const newRouteSegment = {
@@ -388,7 +341,10 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
                 : _.isEqual(lastRoute, firstOption)
                 ? []
                 : option,
-              motion: Math.min(Math.max(route.length - 1, 0), motion),
+              motion:
+                motion === 0
+                  ? 0
+                  : Math.min(Math.max(route.length - 1, 0), motion),
             };
             return {
               routes: [
@@ -442,16 +398,12 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
           (state) => {
             const selectedPositionIndex = state.selectedPosition?.index ?? -1;
             const length =
-              motion === undefined
-                ? Math.max(
-                    0,
-                    state.routes[selectedPositionIndex].motion === 0
-                      ? state.routes[selectedPositionIndex].route.findIndex(
-                          (route) => route.y < HEIGHT / 2
-                        )
-                      : 0
-                  )
-                : motion;
+              motion === undefined &&
+              state.routes[selectedPositionIndex].motion === 0
+                ? state.routes[selectedPositionIndex].route.filter(
+                    (route) => route.y >= HEIGHT / 2
+                  ).length
+                : 0;
             return {
               routes: [
                 ...state.routes.slice(0, selectedPositionIndex),

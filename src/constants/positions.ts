@@ -1,55 +1,46 @@
+import { toSnapped } from "@/utils/play";
 import { Position } from "../types/play";
-import { BLOCK_SNAP_SIZE, HEIGHT, POSITION_RADIUS, WIDTH } from "./size";
+import { HEIGHT, POSITION_RADIUS, WIDTH } from "./size";
 
 export const DEFAULT_PLAYER_POSITIONS: Position[] = [
   {
-    x: Math.round(WIDTH / 2 / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE,
-    y: Math.round(HEIGHT / 2 / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE,
+    x: toSnapped(WIDTH / 2),
+    y: toSnapped(HEIGHT / 2),
     key: "center",
     id: "center",
     index: 0,
   }, // center
   {
-    x: Math.round(WIDTH / 2 / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE,
-    y:
-      Math.round((HEIGHT / 2 + POSITION_RADIUS * 3) / BLOCK_SNAP_SIZE) *
-      BLOCK_SNAP_SIZE,
+    x: toSnapped(WIDTH / 2),
+    y: toSnapped(HEIGHT / 2 + POSITION_RADIUS * 3),
     key: "qb",
     id: "qb",
     index: 1,
   }, // qb
   {
-    x: Math.round(WIDTH / 2 / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE,
-    y:
-      Math.round((HEIGHT / 2 + POSITION_RADIUS * 6) / BLOCK_SNAP_SIZE) *
-      BLOCK_SNAP_SIZE,
+    x: toSnapped(WIDTH / 2),
+    y: toSnapped(HEIGHT / 2 + POSITION_RADIUS * 6),
     key: "2",
     id: "2",
     index: 2,
   }, // rb
   {
-    x: Math.round((POSITION_RADIUS * 2) / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE,
-    y: Math.round(HEIGHT / 2 / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE,
+    x: toSnapped(POSITION_RADIUS * 2),
+    y: toSnapped(HEIGHT / 2),
     key: "3",
     id: "3",
     index: 3,
   }, // x
   {
-    x:
-      Math.round((WIDTH - POSITION_RADIUS * 2) / BLOCK_SNAP_SIZE) *
-      BLOCK_SNAP_SIZE,
-    y: Math.round(HEIGHT / 2 / BLOCK_SNAP_SIZE) * BLOCK_SNAP_SIZE,
+    x: toSnapped(WIDTH - POSITION_RADIUS * 2),
+    y: toSnapped(HEIGHT / 2),
     key: "4",
     id: "4",
     index: 4,
   }, // z
   {
-    x:
-      Math.round((WIDTH / 2 + POSITION_RADIUS * 6) / BLOCK_SNAP_SIZE) *
-      BLOCK_SNAP_SIZE,
-    y:
-      Math.round((HEIGHT / 2 + POSITION_RADIUS) / BLOCK_SNAP_SIZE) *
-      BLOCK_SNAP_SIZE,
+    x: toSnapped(WIDTH / 2 + POSITION_RADIUS * 6),
+    y: toSnapped(HEIGHT / 2 + POSITION_RADIUS),
     key: "5",
     id: "5",
     index: 5,
