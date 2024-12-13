@@ -15,7 +15,7 @@ import {
   getRoutePoints,
   toSnapped,
 } from "@/utils/play";
-import { OPACITY, POINTS, SHADOW_BLUR, X, Y } from "@/constants/editorAttrs";
+import { POINTS, SHADOW_BLUR, X, Y } from "@/constants/editorAttrs";
 
 export type PlayType = {
   handleRouteDraw?: (e: KonvaEventObject<MouseEvent, Node<NodeConfig>>) => void;
@@ -90,24 +90,25 @@ const PlayEditor = ({
             const color = colors[positionIdx];
             const isCenter = positionIdx === 0;
             const isQb = positionIdx === 1;
-            const opacity =
+            const shadowBlur =
               isSelectDisabled ||
               position.isSelected ||
               positions.every((position) => !position.isSelected)
-                ? 1
-                : 0.5;
-            const shadowBlur = position.isSelected && !isSelectDisabled ? 5 : 0;
+                ? 10
+                : 0;
+            const selectedShadowBlur =
+              position.isSelected && !isSelectDisabled ? 5 : 0;
             const layerAttrs: LayerConfig = {
-              opacity,
+              shadowBlur,
               onMouseOver: (
                 event: KonvaEventObject<MouseEvent, Node<NodeConfig>>
               ) => {
-                event.currentTarget.setAttr(OPACITY, 1);
+                event.currentTarget.setAttr(SHADOW_BLUR, 20);
               },
               onMouseLeave: (
                 event: KonvaEventObject<MouseEvent, Node<NodeConfig>>
               ) => {
-                event.currentTarget.setAttr(OPACITY, opacity);
+                event.currentTarget.setAttr(SHADOW_BLUR, shadowBlur);
               },
             };
             const attrs: NodeConfig & StarConfig = {
@@ -130,11 +131,11 @@ const PlayEditor = ({
               onMouseDown: onDraw,
               onMouseEnter: onDraw,
               onMouseOver: (event: KonvaEventObject<MouseEvent>) => {
-                event.target.setAttr(SHADOW_BLUR, 5);
+                event.target.setAttr(SHADOW_BLUR, 10);
                 onDraw?.();
               },
               onMouseLeave: (event: KonvaEventObject<MouseEvent>) => {
-                event.target.setAttr(SHADOW_BLUR, shadowBlur);
+                event.target.setAttr(SHADOW_BLUR, selectedShadowBlur);
                 onDraw?.();
               },
               onDragMove: (event: KonvaEventObject<DragEvent, Node>) => {
@@ -223,7 +224,7 @@ const PlayEditor = ({
               onTouchEnd: onDraw,
               rotation: 180,
               shadowColor: color,
-              shadowBlur,
+              shadowBlur: selectedShadowBlur,
               width: POSITION_RADIUS * 2,
               height: POSITION_RADIUS * 2,
               radius: position.isSelected
