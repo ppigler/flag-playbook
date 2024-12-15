@@ -1,6 +1,7 @@
 "use client";
 
 import {
+  Box,
   Button,
   Card,
   CardActions,
@@ -39,11 +40,11 @@ const PlaybookItem = ({
   href,
   image,
 }: PlaybookItem) => {
-  const { attributes, listeners, setNodeRef, transform, transition } =
+  const { attributes, listeners, setNodeRef, transform, transition, active } =
     useSortable({
       id: playId,
       transition: {
-        duration: 150, // milliseconds
+        duration: 150,
         easing: "cubic-bezier(0.25, 1, 0.5, 1)",
       },
     });
@@ -52,8 +53,15 @@ const PlaybookItem = ({
     () => ({
       transform: CSS.Transform.toString(transform),
       transition,
+      touchAction: "none",
+      ...(active?.id === playId
+        ? {
+            opacity: 0.25,
+            outline: "2px dashed gray",
+          }
+        : {}),
     }),
-    [transform, transition]
+    [transform, transition, active]
   );
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
@@ -93,7 +101,11 @@ const PlaybookItem = ({
             )}
             <Tooltip title="Drag to re-order">
               <IconButton
-                sx={{ position: "absolute", top: 16, cursor: "grab" }}
+                sx={{
+                  position: "absolute",
+                  top: 16,
+                  cursor: "grab",
+                }}
                 {...attributes}
                 {...listeners}
               >
@@ -117,6 +129,7 @@ const PlaybookItem = ({
                 <TbTrash />
               </IconButton>
             </Tooltip>
+            <Box sx={{ flexGrow: 1, height: "100%" }} />
           </CardActions>
         </Card>
       </Grid>
