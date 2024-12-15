@@ -7,7 +7,6 @@ const PlayLayout = ({ children }: { children: ReactNode }) => {
     <Grid
       container
       sx={{ height: "calc(100% - 60px)", width: "100%", overflowY: "hidden" }}
-      id="container"
     >
       <Box>{children}</Box>
       <PlaybookToolbar />
