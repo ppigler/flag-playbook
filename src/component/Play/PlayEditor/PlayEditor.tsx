@@ -238,34 +238,38 @@ const PlayEditor = ({
             };
             return (
               <Layer key={position.id} id={position.id} {...layerAttrs}>
-                <Arrow
-                  key={`route-${position.id}`}
-                  id={`route-${position.id}`}
-                  points={getRoutePoints(route, position)}
-                  stroke={color}
-                  strokeWidth={8}
-                  tension={tension}
-                />
-                <Arrow
-                  key={`option-${position.id}`}
-                  id={`option-${position.id}`}
-                  points={getOptionRoutePoints(route)}
-                  stroke={color}
-                  strokeWidth={8}
-                  dash={[POSITION_RADIUS, 10]}
-                  tension={tension}
-                />
-                <Line
-                  key={`motion-${position.id}`}
-                  id={`motion-${position.id}`}
-                  points={getMotionRoutePoints(route, position)}
-                  stroke={color}
-                  strokeWidth={10}
-                  tension={tension}
-                  lineCap="round"
-                  lineJoin="round"
-                  dash={[0.001, 20]}
-                />
+                {!!route && (
+                  <>
+                    <Arrow
+                      key={`route-${position.id}`}
+                      id={`route-${position.id}`}
+                      points={getRoutePoints(route, position)}
+                      stroke={color}
+                      strokeWidth={8}
+                      tension={tension}
+                    />
+                    <Arrow
+                      key={`option-${position.id}`}
+                      id={`option-${position.id}`}
+                      points={getOptionRoutePoints(route)}
+                      stroke={color}
+                      strokeWidth={8}
+                      dash={[POSITION_RADIUS, 10]}
+                      tension={tension}
+                    />
+                    <Line
+                      key={`motion-${position.id}`}
+                      id={`motion-${position.id}`}
+                      points={getMotionRoutePoints(route, position)}
+                      stroke={color}
+                      strokeWidth={10}
+                      tension={tension}
+                      lineCap="round"
+                      lineJoin="round"
+                      dash={[0.001, 20]}
+                    />
+                  </>
+                )}
                 {position.isKey ? (
                   <Star key={key} {...attrs} />
                 ) : isCenter ? (
