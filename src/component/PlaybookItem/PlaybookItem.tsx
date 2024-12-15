@@ -61,7 +61,7 @@ const PlaybookItem = ({
           }
         : {}),
     }),
-    [transform, transition, active]
+    [transform, transition, active, playId]
   );
 
   const [isDeleteOpen, setIsDeleteOpen] = useState(false);
