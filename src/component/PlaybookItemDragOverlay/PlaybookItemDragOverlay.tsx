@@ -9,7 +9,6 @@ import {
   IconButton,
 } from "@mui/material";
 import Image from "next/image";
-import { useMemo } from "react";
 import { MdDragHandle } from "react-icons/md";
 import { TbTrash } from "react-icons/tb";
 import { useShallow } from "zustand/shallow";
