@@ -5,11 +5,14 @@ import {
   closestCenter,
   DndContext,
   DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
   KeyboardSensor,
   PointerSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
+import { restrictToWindowEdges } from "@dnd-kit/modifiers";
 import { Grid2 as Grid } from "@mui/material";
 import { useCallback, useMemo, useState } from "react";
 import { useShallow } from "zustand/shallow";
@@ -21,8 +24,10 @@ import PlaybookItem from "../PlaybookItem/PlaybookItem";
 import NewPlayCard from "../NewPlayCard/NewPlayCard";
 import SelectFormationDialog from "../SelectFormationDialog/SelectFormationDialog";
 import { useSettingsStore } from "@/store/settingsStore";
+import PlaybookItemDragOverlay from "../PlaybookItemDragOverlay/PlaybookItemDragOverlay";
 
 const Playbook = () => {
+  const [activeId, setActiveId] = useState<null | string>(null);
   const deletePlay = usePlayStore.use.deletePlay();
   const orderPlay = usePlayStore.use.orderPlay();
   const plays = usePlayStore(useShallow((state) => state.plays));
@@ -39,6 +44,9 @@ const Playbook = () => {
     [plays]
   );
 
+  const handleDragStart = (event: DragStartEvent) =>
+    setActiveId(event.active.id + "");
+
   const handleDragEnd = (event: DragEndEvent) => {
     const { active, over } = event;
 
@@ -46,6 +54,8 @@ const Playbook = () => {
     if (newOrder != -1 && active.id !== over?.id) {
       orderPlay(active.id + "", newOrder);
     }
+
+    setActiveId(null);
   };
 
   const sensors = useSensors(
@@ -74,6 +84,7 @@ const Playbook = () => {
       <DndContext
         sensors={sensors}
         collisionDetection={closestCenter}
+        onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
         <Grid
@@ -97,6 +108,9 @@ const Playbook = () => {
                 />
               );
             })}
+            <DragOverlay modifiers={[restrictToWindowEdges]}>
+              {activeId ? <PlaybookItemDragOverlay id={activeId} /> : null}
+            </DragOverlay>
           </SortableContext>
           <NewPlayCard
             size={{ xs: 6, md: 3 }}

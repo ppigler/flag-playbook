@@ -4,7 +4,11 @@ import { ReactNode } from "react";
 
 const PlayLayout = ({ children }: { children: ReactNode }) => {
   return (
-    <Grid container sx={{ height: "100%", width: "100%" }} id="container">
+    <Grid
+      container
+      sx={{ height: "calc(100% - 60px)", width: "100%", overflowY: "hidden" }}
+      id="container"
+    >
       <Box>{children}</Box>
       <PlaybookToolbar />
     </Grid>
