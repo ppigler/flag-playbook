@@ -98,7 +98,7 @@ const useSettingsStoreBase = create<SettingsState>()(
         }),
       }
     ),
-    { name: "settingsStore" }
+    { name: "settingsStore", enabled: process.env.NODE_ENV === "development" }
   )
 );
 
