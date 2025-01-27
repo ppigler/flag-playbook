@@ -141,7 +141,7 @@ const usePlayStoreBase = create<
         }),
       }
     ),
-    { name: "playStore" }
+    { name: "playStore", enabled: process.env.NODE_ENV === "development" }
   )
 );
 

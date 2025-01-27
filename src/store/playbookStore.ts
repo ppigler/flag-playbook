@@ -451,7 +451,7 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
         y: Math.max(y, (HEIGHT / 2) * get().scale),
       }),
     }),
-    { name: "playbookStore" }
+    { name: "playbookStore", enabled: process.env.NODE_ENV === "development" }
   )
 );
 
