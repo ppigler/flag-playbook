@@ -14,6 +14,7 @@ import {
   Radio,
 } from "@mui/material";
 import Image from "next/image";
+import Link from "next/link";
 import { ChangeEvent, useState } from "react";
 
 type SelectFormationDialogContentProps = {
@@ -41,9 +42,9 @@ const SelectFormationDialogContent = ({
     <>
       <DialogContent dividers>
         <DialogContentText id="select-formation-dialog-desc">
-          Select a formation from your base formations defined in `Settings` to
-          start with. You can move the players around later when you edit the
-          play.
+          Select a formation from your base formations defined in{" "}
+          <Link href="/settings">Settings</Link> to start with. You can move the
+          players around later when you edit the play.
         </DialogContentText>
         <Grid container spacing={3} sx={{ marginTop: 4 }}>
           {Object.entries(formations).map(([id, { name, image }]) => (
