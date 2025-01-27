@@ -71,19 +71,21 @@ const Play = ({ playId, formationId, isViewOnly }: PlayProps) => {
   const stageRef = useRef<StageType>(null);
   const formation = formationId || plays[playId!]?.formationId;
 
+  const containerElement = document.getElementById("container");
+
   const fitStageIntoParentContainer = useCallback(() => {
-    const newWidth = document.getElementById("container")?.offsetWidth ?? WIDTH;
+    const newWidth = containerElement?.offsetWidth ?? WIDTH - 100;
     const scale = newWidth / WIDTH;
     if (setScale) setScale(scale);
 
     stageRef.current?.width(newWidth);
     stageRef.current?.height(HEIGHT * scale);
     stageRef.current?.scale({ x: scale, y: scale });
-  }, [setScale]);
+  }, [setScale, containerElement]);
 
   useEffect(() => {
     fitStageIntoParentContainer();
-  }, [fitStageIntoParentContainer]);
+  }, [fitStageIntoParentContainer, stageRef]);
 
   window.addEventListener("resize", fitStageIntoParentContainer);
 

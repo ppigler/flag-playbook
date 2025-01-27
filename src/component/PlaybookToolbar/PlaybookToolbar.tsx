@@ -7,6 +7,8 @@ import {
   TbStar,
   TbLineDashed,
   TbSettings,
+  TbArrowRotaryLastLeft,
+  TbStarFilled,
 } from "react-icons/tb";
 import { RiDeleteBack2Line } from "react-icons/ri";
 import { SpeedDial, SpeedDialAction } from "@mui/material";
@@ -33,8 +35,18 @@ const PlaybookToolbar = () => {
   );
   const toggleRoundedRouteLabel = useMemo(
     () => (selectedPosition?.isRoundedRoute ? "Sharp route" : "Rounded route"),
-    [selectedPosition]
+    [selectedPosition?.isRoundedRoute]
   );
+  const toggleRoundedRouteIcon = useMemo(
+    () =>
+      selectedPosition?.isRoundedRoute ? (
+        <TbArrowRotaryLastLeft />
+      ) : (
+        <TbArrowCurveLeft />
+      ),
+    [selectedPosition?.isRoundedRoute]
+  );
+
   const toggleMotionLabel = useMemo(
     () =>
       routes[selectedPosition?.index ?? 0]?.motion === 0
@@ -44,7 +56,11 @@ const PlaybookToolbar = () => {
   );
   const toggleIsKeyLabel = useMemo(
     () => (selectedPosition?.isKey ? "Unmark route" : "Mark route"),
-    [selectedPosition]
+    [selectedPosition?.isKey]
+  );
+  const toggleIsKeyIcon = useMemo(
+    () => (selectedPosition?.isKey ? <TbStar /> : <TbStarFilled />),
+    [selectedPosition?.isKey]
   );
 
   const actions = [
@@ -60,7 +76,7 @@ const PlaybookToolbar = () => {
     },
     {
       name: toggleRoundedRouteLabel,
-      icon: <TbArrowCurveLeft />,
+      icon: toggleRoundedRouteIcon,
       onClick: () => toggleRounded(),
     },
 
@@ -72,7 +88,7 @@ const PlaybookToolbar = () => {
 
     {
       name: toggleIsKeyLabel,
-      icon: <TbStar />,
+      icon: toggleIsKeyIcon,
       onClick: () => handleToggleIsKey(),
     },
     {
