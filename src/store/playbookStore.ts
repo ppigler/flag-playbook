@@ -361,6 +361,13 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
       toggleRounded: (value?: boolean) =>
         set(
           (state) => ({
+            selectedPosition: state.selectedPosition
+              ? {
+                  ...state.selectedPosition,
+                  isRoundedRoute:
+                    value ?? !state.selectedPosition.isRoundedRoute,
+                }
+              : null,
             positions: state.positions.map((position) => ({
               ...position,
               ...(position.isSelected
@@ -375,6 +382,12 @@ const usePlaybookStoreBase = create<PlaybookStore>()(
       handleToggleIsKey: (value?: boolean) =>
         set(
           (state) => ({
+            selectedPosition: state.selectedPosition
+              ? {
+                  ...state.selectedPosition,
+                  isKey: value ?? !state.selectedPosition.isKey,
+                }
+              : null,
             positions: state.positions.map((position) => ({
               ...position,
               isKey: position.isSelected ? value ?? !position.isKey : false,
